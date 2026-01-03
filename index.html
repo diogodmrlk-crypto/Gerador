@@ -1,233 +1,195 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Gerador de Keys (Web)</title>
-  <style>
-    :root{--bg:#0b0b0d;--panel:#121216;--accent:#2563eb;--muted:#9ca3af;--mono:ui-monospace,SFMono-Regular,monospace}
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:radial-gradient(circle at top,#2563eb22,transparent),var(--bg);
-      color:#f8fafc;
-      font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
-      padding:20px;
-    }
-    .panel{
-      width:100%;
-      max-width:480px;
-      background:var(--panel);
-      padding:20px;
-      border-radius:14px;
-      box-shadow:0 8px 30px rgba(0,0,0,.5);
-    }
-    h1{margin:0 0 16px;color:#ef4444;font-size:20px}
-    label{display:block;margin:8px 0 4px;color:var(--muted);font-size:13px}
-    input[type="text"], input[type="number"], .btn{
-      width:100%;
-      padding:10px 12px;
-      border-radius:10px;
-      border:none;
-      font-size:15px;
-      margin-bottom:10px;
-    }
-    input{background:#1f1f25;color:#fff}
-    .btn{background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
-    .keys-box{
-      margin-top:12px;
-      padding:12px;
-      background:#0f1115;border-radius:10px;
-      font-family:var(--mono);color:#0af1f;
-      max-height:200px;overflow:auto;white-space:pre-wrap;
-    }
-    .actions{display:flex;gap:8px;margin-top:10px}
-    .small{font-size:13px;color:var(--muted)}
-    .log{margin-top:10px;font-size:13px;color:#cbd5e1;white-space:pre-wrap}
-  </style>
+<meta charset="UTF-8">
+<title>Painel de Keys - Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root{
+  --bg:#0b0b0d;
+  --panel:#141417;
+  --accent:#5865F2;
+  --danger:#ef4444;
+  --text:#f8fafc;
+  --muted:#9ca3af;
+  --mono:ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+}
+.panel{
+  width:100%;
+  max-width:480px;
+  background:var(--panel);
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+h1{
+  margin:0 0 15px;
+  color:#ef4444;
+  font-size:20px;
+  text-align:center;
+}
+label{
+  font-size:13px;
+  color:var(--muted);
+  display:block;
+  margin-top:10px;
+}
+input, select, button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  margin-top:4px;
+  background:#1f1f25;
+  color:#fff;
+  font-size:14px;
+}
+button{
+  background:var(--accent);
+  font-weight:700;
+  cursor:pointer;
+  margin-top:12px;
+}
+button.danger{background:var(--danger)}
+pre{
+  margin-top:10px;
+  background:#0f1115;
+  padding:10px;
+  border-radius:10px;
+  font-family:var(--mono);
+  font-size:13px;
+  max-height:180px;
+  overflow:auto;
+}
+.hide{display:none}
+</style>
 </head>
+
 <body>
-  <div class="panel">
-    <h1>Gerador de Keys</h1>
 
-    <label>Prefixo da key (ex: IMPERIAL-CHEATS-)</label>
-    <input type="text" id="prefix" placeholder="Prefixo (ex: SAGAZ-)">
+<!-- LOGIN -->
+<div class="panel" id="loginPanel">
+  <h1>Login Admin</h1>
 
-    <label>Dia da key (ex: 10)</label>
-    <input type="text" id="dia" placeholder="Dia (ex: 10)">
+  <label>Usuário</label>
+  <input id="user" placeholder="admin">
 
-    <label>Quantidade de keys</label>
-    <input type="number" id="quantidade" value="5" min="1" max="500">
+  <label>Senha</label>
+  <input id="pass" type="password" placeholder="******">
 
-    <label>Tamanho da key (sem prefixo)</label>
-    <input type="number" id="tamanho" value="12" min="4" max="64">
+  <button onclick="login()">Entrar</button>
+</div>
 
-    <div class="actions">
-      <button class="btn" id="btnGerar">Gerar Keys</button>
-      <button id="btnCopiar" class="btn" style="background:#111827">Copiar</button>
-      <button id="btnDownload" class="btn" style="background:#0b1220">Download</button>
-    </div>
+<!-- PAINEL -->
+<div class="panel hide" id="adminPanel">
+  <h1>Painel de Keys</h1>
 
-    <div class="keys-box" id="keysBox">As keys geradas aparecerão aqui...</div>
+  <label>Prefixo</label>
+  <input id="prefix" value="FERRAO-">
 
-    <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
-      <label style="margin:0"><input type="checkbox" id="sendMockapi" checked> Enviar para MockAPI</label>
-      <label style="margin:0"><input type="checkbox" id="sendWebhook"> Enviar para Webhook</label>
-    </div>
+  <label>Quantidade</label>
+  <input id="qty" type="number" value="5" min="1" max="200">
 
-    <label style="margin-top:8px">Api server nao mexe!</label>
-    <input type="text" id="mockapiUrl" value="https://68f27d4fb36f9750deecce00.mockapi.io/keys1">
+  <label>Tipo de Expiração</label>
+  <select id="type">
+    <option value="daily">Daily (24h)</option>
+    <option value="weekly">Weekly (7 dias)</option>
+    <option value="perm">Permanente</option>
+  </select>
 
-    <label>Webhook)</label>
-    <input type="text" id="webhookUrl" value="https://discord.com/api/webhooks/1428813719185522812/sIRgowD1X2B6i4gOWlUVcGYneUmQ4gZofgHdkFtjt_O8refTKlaWRVT9VnBvU0lD4XfO">
+  <label>MockAPI URL</label>
+  <input id="api" value="https://SEU_ID.mockapi.io/api/v1/keys">
 
-    <div class="log" id="log">Logs aparecerão aqui...</div>
-  </div>
+  <button onclick="generate()">Gerar & Enviar</button>
+  <button class="danger" onclick="logout()">Sair</button>
+
+  <pre id="output">Keys aparecerão aqui...</pre>
+</div>
 
 <script>
-(() => {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const btnGerar = document.getElementById("btnGerar");
-  const keysBox = document.getElementById("keysBox");
-  const logEl = document.getElementById("log");
-  const btnCopiar = document.getElementById("btnCopiar");
-  const btnDownload = document.getElementById("btnDownload");
+/* ===== CONFIG LOGIN ===== */
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "123456";
 
-  function gerarKey(tamanho, prefixo, dia){
-    let key = "";
-    for(let i=0;i<tamanho;i++){
-      key += chars[Math.floor(Math.random()*chars.length)];
-    }
-    return `${prefixo}${dia}${key}`;
+/* ===== LOGIN ===== */
+function login(){
+  if(
+    document.getElementById("user").value === ADMIN_USER &&
+    document.getElementById("pass").value === ADMIN_PASS
+  ){
+    loginPanel.classList.add("hide");
+    adminPanel.classList.remove("hide");
+  }else{
+    alert("Login inválido");
   }
+}
+function logout(){
+  location.reload();
+}
 
-  function log(msg){
-    console.log(msg);
-    logEl.textContent = (logEl.textContent ? logEl.textContent + "\n" : "") + msg;
-  }
+/* ===== KEY GEN ===== */
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-  async function enviarParaMockapi(url, keyObj){
+function randomKey(len){
+  let s="";
+  for(let i=0;i<len;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+async function generate(){
+  const prefix = prefixInput.value.trim();
+  const qty = parseInt(qtyInput.value);
+  const type = typeSelect.value;
+  const api = apiInput.value.trim();
+
+  output.textContent = "";
+  if(!api){alert("MockAPI inválida");return;}
+
+  for(let i=0;i<qty;i++){
+    const key = prefix + randomKey(12);
+
+    const payload = {
+      key: key,
+      used: false,
+      device: "",
+      type: type,
+      createdAt: Math.floor(Date.now()/1000),
+      activatedAt: 0
+    };
+
     try{
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(keyObj)
+      const res = await fetch(api,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
       });
-      log(`MockAPI (${keyObj.key}): ${res.status}`);
-      return res;
+      output.textContent += key+" ✔\n";
     }catch(e){
-      log(`Erro MockAPI (${keyObj.key}): ${e}`);
-      return null;
+      output.textContent += key+" ❌\n";
     }
   }
+}
 
-  async function enviarWebhook(url, keys){
-    try{
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ content: `🔑 Novas keys geradas:\n${keys.join("\n")}` })
-      });
-      log(`Webhook: ${res.status}`);
-      return res;
-    }catch(e){
-      log(`Erro Webhook: ${e}`);
-      return null;
-    }
-  }
-
-  btnGerar.addEventListener("click", async () => {
-    logEl.textContent = ""; // limpa logs visíveis
-    const prefix = (document.getElementById("prefix").value || "").trim();
-    const dia = (document.getElementById("dia").value || "").trim();
-    const quantidade = parseInt(document.getElementById("quantidade").value) || 5;
-    const tamanho = parseInt(document.getElementById("tamanho").value) || 12;
-    const sendMock = document.getElementById("sendMockapi").checked;
-    const sendHook = document.getElementById("sendWebhook").checked;
-    const mockapiUrl = document.getElementById("mockapiUrl").value.trim();
-    const webhookUrl = document.getElementById("webhookUrl").value.trim();
-
-    if(!prefix || !dia){
-      alert("Preencha prefixo e dia!");
-      return;
-    }
-
-    const keys = [];
-    for(let i=0;i<quantidade;i++){
-      keys.push(gerarKey(tamanho, prefix, dia));
-    }
-
-    keysBox.textContent = keys.join("\n");
-    log(`🔹 Keys geradas: ${keys.length}`);
-
-    // enviar para MockAPI (se marcado)
-    if(sendMock && mockapiUrl){
-      log("Enviando para MockAPI...");
-      for(const k of keys){
-        const payload = {
-          key: k,
-          status: "active",
-          createdAt: new Date().toISOString(),
-          dia: dia
-        };
-        // não bloqueante: aguarda cada envio para evitar flood, mas você pode paralelizar se quiser
-        await enviarParaMockapi(mockapiUrl, payload);
-      }
-    }
-
-    // enviar para webhook (se marcado)
-    if(sendHook && webhookUrl){
-      log("Enviando para Webhook...");
-      await enviarWebhook(webhookUrl, keys);
-    }
-
-    // mostra alerta simples (in-page)
-    log("Operação finalizada.");
-  });
-
-  btnCopiar.addEventListener("click", async () => {
-    const text = keysBox.textContent;
-    if(!text || text.includes("As keys geradas")){
-      alert("Nada para copiar.");
-      return;
-    }
-    try{
-      await navigator.clipboard.writeText(text);
-      alert("Keys copiadas para a área de transferência!");
-    }catch(e){
-      // fallback
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      ta.remove();
-      alert("Copiado (fallback).");
-    }
-  });
-
-  btnDownload.addEventListener("click", () => {
-    const text = keysBox.textContent;
-    if(!text || text.includes("As keys geradas")){
-      alert("Nada para baixar.");
-      return;
-    }
-    const blob = new Blob([text], {type:"text/plain"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "keys.txt";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  });
-
-})();
+/* ===== ELEMENTS ===== */
+const loginPanel = document.getElementById("loginPanel");
+const adminPanel = document.getElementById("adminPanel");
+const prefixInput = document.getElementById("prefix");
+const qtyInput = document.getElementById("qty");
+const typeSelect = document.getElementById("type");
+const apiInput = document.getElementById("api");
+const output = document.getElementById("output");
 </script>
+
 </body>
-</html>
