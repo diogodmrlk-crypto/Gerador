@@ -111,7 +111,6 @@ pre{
 
   <label>Tipo</label>
   <select id="type">
-    <option value="hour">Hour (1 Hora)</option>
     <option value="daily">Daily</option>
     <option value="weekly">Weekly</option>
     <option value="perm">Perm</option>
@@ -163,24 +162,14 @@ async function generate(){
   genOut.textContent="";
   for(let i=0;i<qty.value;i++){
     const key=prefix.value+rand(8)+(Math.floor(Math.random()*9000)+1000);
-
-    const created=Math.floor(Date.now()/1000);
-
-    let expiresAt=0;
-    if(type.value==="hour"){
-      expiresAt=created+3600;
-    }
-
     const payload={
       key:key,
       used:false,
       device:"",
       type:type.value,
-      createdAt:created,
-      activatedAt:0,
-      expiresAt:expiresAt
+      createdAt:Math.floor(Date.now()/1000),
+      activatedAt:0
     };
-
     await fetch(api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     genOut.textContent+=key+"\n";
   }
